@@ -1,0 +1,658 @@
+<?php if ( ! defined('BASEPATH')) exit('No direct script access allowed');
+header("Access-Control-Allow-Origin: *");
+
+
+class User extends CI_Controller {
+
+	function __construct()
+	{
+		parent::__construct();
+
+		$this->load->helper('url');
+		$this->load->database();
+		$this->load->model('Gestion_model','dash');
+		$this->load->library(array('session','form_validation','email'));	
+	}
+
+  public function index($mess = 2)
+  {
+    	if(!$this->session->userdata('username')){
+			$data['main'] 	= 'user/login';
+			$data['message'] 	= $mess;
+			$this->load->view('base_template/login_base',$data);
+		}
+		else{
+			
+			redirect('consulta/listado_pacientes', 'listado_pacientes');
+		}
+  }
+	public function sumadias($dias,$hoy){
+	$nuevafecha = strtotime('+'.$dias.' day',strtotime($hoy));
+	$fecha = date('Y-m-d',$nuevafecha);
+	return $fecha;
+	}
+	public function actualizamesdia(){
+		?>
+		<script src="<?php echo base_url(); ?>assets/js/calculo.js" type="text/javascript"></script>
+		 <script src="<?php echo base_url(); ?>assets/global/plugins/jquery.min.js" type="text/javascript"></script> 
+		<script type="text/javascript">;
+		result = calcular("1","05","2016");
+		var edad_gestacional= result[4]+"."+result[5];
+		//alert(edad_gestacional);
+$(document).ready(miFuncion());
+function miFuncion()
+{
+	$.post("<?php echo base_url(); ?>user/actualiza_ds",{
+		          numero:1,
+		        },function(data){
+								var con=data.length;
+								var day = [];var month = []
+								for(ll=0;ll < con;ll++){		       	
+								var fecha = data[ll]['fecha_ultimop'];
+								var id_usuario = data[ll]['id_usuario'];
+								var res = fecha.split("-");
+								var dia = parseFloat(res[2]);
+								var mes = res[1];
+								var ano = res[0];
+								result = calcular(dia,mes,ano);
+								$.post("<?php echo base_url(); ?>user/actualiza_mesd",{
+									numero:2,
+									dia:result[5],
+									mes:result[4],
+									id_usuario:id_usuario,
+					        });									
+								}
+               }, "json");
+	/**/               
+}     	
+     	
+
+		</script>
+		<?php
+	}
+  public function codigomesdia(){
+
+  		$datos=$this->dash->list_clientes()->result_array();
+  		$num=0;
+  		foreach($datos as $data){
+ 			$sem=$data['semana'];$dia=$data['dia'];
+ 			if($sem < 40){
+	 			if($dia==6){
+	 				
+	 			$semana=$sem+1;$diafinal=0;
+	 			$dad[$num]['semana']=$semana;$dad[$num]['dia']=$diafinal;$dad[$num]['id_usuario']=$data['id_usuario'];
+	 			}
+	 			if($dia < 6 & $dia !=0){
+	 			$semana=$sem;$diafinal=$dia+1;
+	 			$dad[$num]['semana']=$semana;$dad[$num]['dia']=$diafinal;$dad[$num]['id_usuario']=$data['id_usuario'];
+	 			}
+	 			if($dia < 6 & $dia ==0){
+	 			$semana=$sem;$diafinal=$dia+1;
+	 			$dad[$num]['semana']=$semana;$dad[$num]['dia']=$diafinal;$dad[$num]['id_usuario']=$data['id_usuario'];
+	 			}
+	 			if($sem == 0 & $dia ==0){
+	 			$semana=$sem;$diafinal=$dia;
+	 			$dad[$num]['semana']=$semana;$dad[$num]['dia']=$diafinal;$dad[$num]['id_usuario']=$data['id_usuario'];
+	 			}
+ 			}
+ 			else{
+ 				if($sem == 40 & $dia == 0){
+	 			$semana=$sem;$diafinal=$dia+1;
+	 			$dad[$num]['semana']=$semana;$dad[$num]['dia']=$diafinal;$dad[$num]['id_usuario']=$data['id_usuario'];
+	 			}
+ 				
+ 			}
+ 			$num++;
+  		}
+  		foreach($dad as $data){
+  			$id_usuario=$data['id_usuario'];
+  			$data=array(
+				'semana' => $data['semana'],
+				'dia' => $data['dia'],);
+				$this->dash->actualizamesd($data,$id_usuario);	
+			}
+  }
+	public function actualiza_ds(){
+	$numero=$_POST['numero'];
+	if($numero==1){	
+	$datos=$this->dash->list_clientes()->result_array();
+	echo json_encode($datos);
+	}
+	}
+	public function actualiza_mesd(){
+	$numero=$_POST['numero'];	
+	if($numero==2){		
+	$dia=$_POST['dia'];
+	$semana=$_POST['mes'];
+	$id_usuario=$_POST['id_usuario'];
+	$data=array(
+	'semana' => $semana,
+	'dia' => $dia,
+	);
+	$this->dash->actualizamesd($data,$id_usuario);
+	
+	}
+	}
+	public function cumple_semana()
+	{			
+				$hoy= date('Y-m-d');
+		   	$temp=$this->dash->list_cumple()->result_array();
+		   	foreach($temp as $user){
+		   	if($user['semana']!=0){
+		   	if($user['dia']==0){
+		   	$correo=$user['correo'];
+		   	$cuerpo="http://maternofetal.net/admin/user/debaja/".$correo;
+		   	/*$cumple_update=$this->sumadias(7,$user['cumple']);
+		   	$data=array("semana" => $sem_update,"cumple" => $cumple_update);
+		   	$tempo=$this->dash->update_cumple($data,$user['id_usuario']);*/
+				  $bien=$this->dash->GetMensaje($user['semana']);
+					$va=$bien[0]['correo'];
+					$doblega=explode("http://maternofetal.net/admin/user/debaja",$va);
+					$final=$doblega[0].$cuerpo.$doblega[1];
+					$config['mailtype'] = 'html';
+					$this->email->initialize($config);
+			    $this->email->from("admin@maternofetal.net","Dr. Ricardo Gomez Betancourt");
+			    $this->email->to(array($correo,'admin@maternofetal.net'));
+			    $this->email->subject('Felicidades hoy estas cumpliendo '.$sem_update.' semanas de embarazo');
+			    $this->email->message($final);
+			    $this->email->send();
+		  }   		
+		}	
+  }
+	}
+  public function enviar(){
+  	$faltante=$_REQUEST['faltante'];
+    $pario = $_REQUEST['pario'];
+		$semanas = $_REQUEST['semanas'];
+		$nombre = $_REQUEST['nombre'];
+		$correo = $_REQUEST['correo'];
+		//$faltante=1;$pario = 2;$semanas = 3;$nombre = 4;$correo = "disenosjjez88@gmail.com";
+		//echo $faltante." - ".$pario." - ".$semanas." - ".$nombre." - ".$correo." - ";
+		$ref=$this->dash->GetCorreo($correo);
+		$id=$ref[0]['id_usuario'];
+		$datef=date('d/m/Y');
+		//$bien=$this->dash->GetMensaje();
+		//$va=$bien[0]['correo'];
+$va='<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional //EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" /> 
+<style type="text/css">
+  body, .mainTable { height:100% !important; width:100% !important; margin:0; padding:0; }
+  img, a img { border:0; outline:none; text-decoration:none; }
+  .imageFix { display:block; }
+  table, td { border-collapse:collapse; mso-table-lspace:0pt; mso-table-rspace:0pt;}
+  p {margin:0; padding:0; margin-bottom:0;}
+  .ReadMsgBody{width:100%;} .ExternalClass{width:100%;}
+  .ExternalClass, .ExternalClass p, .ExternalClass span, .ExternalClass font, .ExternalClass td, .ExternalClass div{line-height:100%;}
+  img{-ms-interpolation-mode: bicubic;}
+  body, table, td, p, a, li, blockquote{-ms-text-size-adjust:100%; -webkit-text-size-adjust:100%;}
+</style><style>
+table{ border-collapse: collapse; }
+@media only screen and (max-width: 622px) {
+    body[yahoo] .rimg {
+       max-width: 100%;
+       height: auto;
+    }
+    body[yahoo] .rtable{
+        width: 100% !important;
+        table-layout: fixed;
+    }
+    body[yahoo] .rtable tr{
+       height:auto !important;
+    }
+}
+</style>
+
+<!--[if gte mso 9]>
+<xml>
+  <o:OfficeDocumentSettings>
+    <o:AllowPNG/>
+    <o:PixelsPerInch>96</o:PixelsPerInch>
+  </o:OfficeDocumentSettings>
+</xml>
+<![endif]-->
+</head>
+<body yahoo=fix scroll="auto" style="padding:0; margin:0; FONT-SIZE: 12px; FONT-FAMILY: Arial, Helvetica, sans-serif; cursor:auto; background:#FFFFFF">
+<TABLE class="rtable mainTable" cellSpacing=0 cellPadding=0 width="100%" bgColor=#ffffff>
+<TR>
+<TD style="FONT-SIZE: 0px; HEIGHT: 20px; LINE-HEIGHT: 0">&#160;</TD></TR>
+<TR>
+<TD vAlign=top>
+<TABLE class=rtable style="WIDTH: 622px; MARGIN: 0px auto" cellSpacing=0 cellPadding=0 width=622 align=center border=0>
+<TR>
+<TD style="BORDER-TOP: #fa6105 4px dotted; BORDER-RIGHT: #fa6105 4px dotted; BORDER-BOTTOM: #fa6105 4px dotted; PADDING-BOTTOM: 4px; PADDING-TOP: 4px; PADDING-LEFT: 4px; BORDER-LEFT: #fa6105 4px dotted; PADDING-RIGHT: 4px; BACKGROUND-COLOR: #f7f7f8">
+<TABLE class=rtable style="WIDTH: 100%" cellSpacing=0 cellPadding=0 align=left>
+<TR style="HEIGHT: 10px">
+<TD style="BORDER-TOP: #651a82 2px dashed; BORDER-RIGHT: #651a82 2px dashed; WIDTH: 100%; VERTICAL-ALIGN: top; BORDER-BOTTOM: #651a82 2px dashed; PADDING-BOTTOM: 2px; TEXT-ALIGN: center; PADDING-TOP: 2px; PADDING-LEFT: 2px; BORDER-LEFT: #651a82 2px dashed; PADDING-RIGHT: 2px; BACKGROUND-COLOR: #f7f7f8">
+<TABLE cellSpacing=0 cellPadding=0 align=center border=0>
+<TR>
+<TD style="PADDING-BOTTOM: 4px; PADDING-TOP: 4px; PADDING-LEFT: 4px; PADDING-RIGHT: 4px" align=center>
+<TABLE cellSpacing=0 cellPadding=0 border=0>
+<TR>
+<TD style="BORDER-TOP: medium none; BORDER-RIGHT: medium none; BORDER-BOTTOM: medium none; BORDER-LEFT: medium none; BACKGROUND-COLOR: transparent"><IMG class=rimg style="BORDER-TOP: medium none; BORDER-RIGHT: medium none; BORDER-BOTTOM: medium none; BORDER-LEFT: medium none; DISPLAY: block; BACKGROUND-COLOR: transparent" border=0 src="http://maternofetal.net/Imagenes/materno_header.png" width=590 height=70 hspace="0" vspace="0"></TD></TR></TABLE></TD></TR></TABLE></TD></TR></TABLE></TD></TR>
+<TR>
+<TD style="BORDER-TOP: medium none; BORDER-RIGHT: #fa6105 3px solid; BORDER-BOTTOM: medium none; PADDING-BOTTOM: 4px; PADDING-TOP: 4px; PADDING-LEFT: 4px; BORDER-LEFT: #fa6105 3px solid; PADDING-RIGHT: 4px; BACKGROUND-COLOR: #ffffff">
+<TABLE class=rtable style="WIDTH: 100%" cellSpacing=0 cellPadding=0 align=left>
+<TR style="HEIGHT: 20px">
+<TD style="BORDER-TOP: medium none; BORDER-RIGHT: medium none; WIDTH: 100%; VERTICAL-ALIGN: top; BORDER-BOTTOM: medium none; PADDING-BOTTOM: 4px; TEXT-ALIGN: center; PADDING-TOP: 4px; PADDING-LEFT: 4px; BORDER-LEFT: medium none; PADDING-RIGHT: 4px; BACKGROUND-COLOR: #ffffff">
+<P style="MARGIN-BOTTOM: 1em; FONT-SIZE: 18px; FONT-FAMILY: Verdana, Arial, Helvetica, sans-serif; COLOR: #800080; MARGIN-TOP: 0px; LINE-HEIGHT: 155%; BACKGROUND-COLOR: transparent; mso-line-height-rule: exactly" align=left><STRONG>Bienvenida!! '.$nombre.' </STRONG></P>
+<P style="MARGIN-BOTTOM: 1em; FONT-SIZE: 12px; FONT-FAMILY: Verdana, Arial, Helvetica, sans-serif; COLOR: #2f2f2f; MARGIN-TOP: 0px; LINE-HEIGHT: 155%; BACKGROUND-COLOR: transparent; mso-line-height-rule: exactly" align=left>Nos complace informarte que tienes </P><P style="MARGIN-BOTTOM: 1em; FONT-SIZE: 18px; FONT-FAMILY: Verdana, Arial, Helvetica, sans-serif; COLOR: #800080; MARGIN-TOP: 0px; LINE-HEIGHT: 155%; BACKGROUND-COLOR: transparent; mso-line-height-rule: exactly" align=left>'.$semanas.' de embarazo </P><P style="MARGIN-BOTTOM: 1em; FONT-SIZE: 12px; FONT-FAMILY: Verdana, Arial, Helvetica, sans-serif; COLOR: #2f2f2f; MARGIN-TOP: 0px; LINE-HEIGHT: 155%; BACKGROUND-COLOR: transparent; mso-line-height-rule: exactly" align=left>y tu fecha estimada de parto es el </P><P style="MARGIN-BOTTOM: 1em; FONT-SIZE: 18px; FONT-FAMILY: Verdana, Arial, Helvetica, sans-serif; COLOR: #800080; MARGIN-TOP: 0px; LINE-HEIGHT: 155%; BACKGROUND-COLOR: transparent; mso-line-height-rule: exactly" align=left>'.$pario.'</P><P style="MARGIN-BOTTOM: 1em; FONT-SIZE: 12px; FONT-FAMILY: Verdana, Arial, Helvetica, sans-serif; COLOR: #2f2f2f; MARGIN-TOP: 0px; LINE-HEIGHT: 155%; BACKGROUND-COLOR: transparent; mso-line-height-rule: exactly" align=left> y aun falta!! preparate para estas </P><P style="MARGIN-BOTTOM: 1em; FONT-SIZE: 18px; FONT-FAMILY: Verdana, Arial, Helvetica, sans-serif; COLOR: #800080; MARGIN-TOP: 0px; LINE-HEIGHT: 155%; BACKGROUND-COLOR: transparent; mso-line-height-rule: exactly" align=left>'.$faltante.' faltantes de tu embarazo </P><P style="MARGIN-BOTTOM: 1em; FONT-SIZE: 12px; FONT-FAMILY: Verdana, Arial, Helvetica, sans-serif; COLOR: #2f2f2f; MARGIN-TOP: 0px; LINE-HEIGHT: 155%; BACKGROUND-COLOR: transparent; mso-line-height-rule: exactly" align=left>Te enviaremos un correo para seguir de cerca cada semana de gestaci&oacute;n de tu bebe, recibir&aacute;s toda la informaci&oacute;n necesaria cuando cumplas una semana mas de embarazo</P></TD></TR></TABLE></TD></TR>
+<TR>
+<TD style="BORDER-TOP: medium none; BORDER-RIGHT: #fa6105 3px solid; BORDER-BOTTOM: medium none; PADDING-BOTTOM: 4px; PADDING-TOP: 4px; PADDING-LEFT: 4px; BORDER-LEFT: #fa6105 3px solid; PADDING-RIGHT: 4px; BACKGROUND-COLOR: #ffffff">
+<TABLE class=rtable style="WIDTH: 100%" cellSpacing=0 cellPadding=0 align=left>
+<TR style="HEIGHT: 10px">
+<TD style="BORDER-TOP: medium none; BORDER-RIGHT: medium none; WIDTH: 100%; VERTICAL-ALIGN: top; BORDER-BOTTOM: medium none; PADDING-BOTTOM: 4px; TEXT-ALIGN: center; PADDING-TOP: 4px; PADDING-LEFT: 4px; BORDER-LEFT: medium none; PADDING-RIGHT: 4px; BACKGROUND-COLOR: #ffffff">
+<TABLE cellSpacing=0 cellPadding=0 align=center border=0>
+<TR>
+<TD style="PADDING-BOTTOM: 1px; PADDING-TOP: 1px; PADDING-LEFT: 1px; PADDING-RIGHT: 1px" align=center>
+<TABLE cellSpacing=0 cellPadding=0 border=0>
+<TR>
+<TD style="BORDER-TOP: medium none; BORDER-RIGHT: medium none; BORDER-BOTTOM: medium none; BORDER-LEFT: medium none; BACKGROUND-COLOR: transparent"><IMG class=rimg style="BORDER-TOP: medium none; BORDER-RIGHT: medium none; BORDER-BOTTOM: medium none; BORDER-LEFT: medium none; DISPLAY: block; BACKGROUND-COLOR: transparent" border=0 src="http://maternofetal.net/Imagenes/materno_cuerpo.png" width=410 height=200 hspace="0" vspace="0"></TD></TR></TABLE></TD></TR></TABLE> </TD></TR></TABLE></TD></TR>
+<TR>
+<TD style="BORDER-TOP: medium none; BORDER-RIGHT: #fa6105 3px solid; BORDER-BOTTOM: medium none; PADDING-BOTTOM: 4px; PADDING-TOP: 4px; PADDING-LEFT: 4px; BORDER-LEFT: #fa6105 3px solid; PADDING-RIGHT: 4px; BACKGROUND-COLOR: #ffffff">
+<TABLE class=rtable style="WIDTH: 100%" cellSpacing=0 cellPadding=0 align=left>
+<TR style="HEIGHT: 20px">
+<TD style="BORDER-TOP: medium none; BORDER-RIGHT: medium none; WIDTH: 100%; VERTICAL-ALIGN: top; BORDER-BOTTOM: medium none; PADDING-BOTTOM: 4px; TEXT-ALIGN: center; PADDING-TOP: 4px; PADDING-LEFT: 4px; BORDER-LEFT: medium none; PADDING-RIGHT: 4px; BACKGROUND-COLOR: #f7f7f8">
+<P style="MARGIN-BOTTOM: 1em; FONT-SIZE: 12px; FONT-FAMILY: Verdana, Arial, Helvetica, sans-serif; COLOR: #f7f7f8; MARGIN-TOP: 0px; LINE-HEIGHT: 155%; BACKGROUND-COLOR: transparent; mso-line-height-rule: exactly" align=left><FONT style="COLOR: #2f2f2f">En cualquier momento puedes dejar de recibir correos semanales, simplemente dandole click a este enlace <A title=Unsubscribe style="COLOR: #565656" href="http://maternofetal.net/admin/user/debaja/'.$correo.'">Unsubscribe</A>&#160;&#160;</FONT></P></TD></TR></TABLE></TD></TR>
+<TR>
+<TD style="BORDER-TOP: medium none; BORDER-RIGHT: #fa6105 3px solid; BORDER-BOTTOM: medium none; PADDING-BOTTOM: 4px; PADDING-TOP: 4px; PADDING-LEFT: 4px; BORDER-LEFT: #fa6105 3px solid; PADDING-RIGHT: 4px; BACKGROUND-COLOR: #f7f7f8">
+<TABLE class=rtable style="WIDTH: 100%" cellSpacing=0 cellPadding=0 align=left>
+<TR style="HEIGHT: 10px">
+<TD style="BORDER-TOP: medium none; BORDER-RIGHT: medium none; WIDTH: 100%; VERTICAL-ALIGN: top; BORDER-BOTTOM: medium none; PADDING-BOTTOM: 0px; TEXT-ALIGN: center; PADDING-TOP: 10px; PADDING-LEFT: 0px; BORDER-LEFT: medium none; PADDING-RIGHT: 0px; BACKGROUND-COLOR: #ffffff">
+<P style="MARGIN-BOTTOM: 1em; FONT-SIZE: 14px; FONT-FAMILY: Verdana, Arial, Helvetica, sans-serif; COLOR: #909091; MARGIN-TOP: 0px; LINE-HEIGHT: 125%; BACKGROUND-COLOR: transparent; mso-line-height-rule: exactly" align=center><FONT style="FONT-SIZE: 12px">Unidad Ginecofetal de Caracas <BR>Centro M&#233;dico de Caracas <BR>Centro Medico Docente La Trinidad <BR>Caracas <BR>Venezuela<BR></FONT><A title=www.maternofetal.net style="COLOR: #565656" href="http://www.maternofetal.net"><FONT style="FONT-SIZE: 12px">www.maternofetal.net</FONT></A><BR><FONT style="FONT-SIZE: 12px">admin@maternofetal.net</FONT><A style="TEXT-DECORATION: underline; COLOR: #565656" href="[[view_online_link]]"></A></P></TD></TR></TABLE></TD></TR>
+<TR>
+<TD style="BORDER-TOP: #fa6105 3px dashed; BORDER-RIGHT: #fa6105 3px solid; BORDER-BOTTOM: #fa6105 3px solid; PADDING-BOTTOM: 4px; PADDING-TOP: 1px; PADDING-LEFT: 4px; BORDER-LEFT: #fa6105 3px solid; PADDING-RIGHT: 4px; BACKGROUND-COLOR: transparent">
+<TABLE class=rtable style="WIDTH: 100%" cellSpacing=0 cellPadding=0 align=left>
+<TR style="HEIGHT: 10px">
+<TD style="BORDER-TOP: medium none; BORDER-RIGHT: medium none; WIDTH: 100%; VERTICAL-ALIGN: top; BORDER-BOTTOM: medium none; PADDING-BOTTOM: 1px; TEXT-ALIGN: center; PADDING-TOP: 1px; PADDING-LEFT: 4px; BORDER-LEFT: medium none; PADDING-RIGHT: 4px; BACKGROUND-COLOR: transparent">
+<P style="MARGIN-BOTTOM: 1em; FONT-SIZE: 10px; FONT-FAMILY: Arial, Helvetica, sans-serif; COLOR: #909091; MARGIN-TOP: 0px; LINE-HEIGHT: 125%; BACKGROUND-COLOR: transparent; mso-line-height-rule: exactly" align=left>&#160;</P>
+<P style="MARGIN-BOTTOM: 1em; FONT-SIZE: 10px; FONT-FAMILY: Arial, Helvetica, sans-serif; COLOR: #5f5f5f; MARGIN-TOP: 0px; LINE-HEIGHT: 125%; BACKGROUND-COLOR: transparent; mso-line-height-rule: exactly" align=center><FONT style="FONT-SIZE: 12px; LINE-HEIGHT: 145%"><FONT style="FONT-SIZE: 14px"><FONT style="FONT-SIZE: 12px"><STRONG>Dr. Ricardo G&#243;mez Betancourt</STRONG></FONT> </FONT><BR>Para mayor informaci&#243;n sobre su embarazo, visite <A title="maternofetal.net " style="COLOR: #5f5f5f" href="http://www.maternofetal.net ">maternofetal.net</A><BR>&#160;Si no desea recibir el correo semanal con la informaci&#243;n sobre su embarazo, simplemente pulse este enlace <A title=Unsubscribe style="COLOR: #565656" href="http://maternofetal.net/admin/user/debaja/'.$correo.'">Unsubscribe</A>.<BR>&#169;2016 Unidad Ginecofetal de Caracas. <BR>Todos los Derechos Reservados</FONT>.</P></TD></TR></TABLE></TD></TR></TABLE></TD></TR>
+<TR>
+<TD style="FONT-SIZE: 0px; HEIGHT: 8px; LINE-HEIGHT: 0">&#160;</TD></TR></TABLE>
+</body>
+</html>';
+	if($this->dash->CheckCorreo($correo))
+	{
+		$retorna['resultado']="no";$retorna['correo']="ok";
+	}
+else
+	{
+			$config['mailtype'] = 'html';
+			$this->email->initialize($config);
+	    $this->email->from("admin@maternofetal.net","Dr. Ricardo Gomez Betancourt");
+	    $this->email->to($correo,'admin@maternofetal.net');
+	    $this->email->subject('Bienvenida Maternofetal');
+	    $this->email->message($va);
+	    if($this->email->send())
+			{
+	    	$retorna['resultado']="ok";
+	    }
+	    else
+	    {
+	    	$retorna['resultado']="no";	
+	    }
+	    $retorna['correo']="no";
+    
+  }
+    	echo json_encode($retorna);
+  }
+  function debaja($correo)
+	{		
+				$ref=$this->dash->GetCorreo($correo);
+		   	$data['nombre']=$ref[0]['nombre'];
+		   	$id=$ref[0]['id_usuario'];
+		   	$temp=$this->dash->debaja($id);
+		   	if($temp != NULL){
+				$this->load->view('user/debaja',$data);
+			}
+	}
+	function login()
+	{
+		if($_POST){
+			$usuario = addslashes($_POST['username']);
+			$clave = addslashes($_POST['password']);
+			$password=sha1($clave);
+			$temp = $this->dash->GetUser($usuario,$password)->result_array();
+			if($temp != NULL){
+				if($temp[0]['activo']==1){
+				$dat = array(
+					'username' => $temp[0]['usuario'],
+					'id' => $temp[0]['id'],
+				);
+				$this->session->set_userdata($dat);
+			redirect('consulta/listado_pacientes', 'listado_pacientes');
+			}
+			else{
+				$this->session->set_flashdata('error', "Usuario Inactivo pongase en contacto con su Administrador");
+				$data['main'] 	= 'user/login';
+				$this->load->view('base_template/login_base',$data);
+				
+			}
+		}
+			else
+			{
+				$this->session->set_flashdata('error', "Usuario y/o Contrase&ntilde;a Incorrectos");
+				$data['main'] 	= 'user/login';
+				$this->load->view('base_template/login_base',$data);
+			}
+			
+		}
+			else{
+				$this->session->set_flashdata('error', "Debe iniciar sesi&oacute;n");
+				$data['main'] 	= 'user/login';
+				$this->load->view('base_template/login_base',$data);
+			}
+	}
+/////////////usuarios/////////7
+
+	function registro($mess = 1)
+	{
+		if(!$this->session->userdata('username')){
+		$this->session->set_flashdata('error', "Debe iniciar sesi&oacute;n");
+		$data['main'] 	= 'user/login';
+		$this->load->view('base_template/login_base',$data);
+	}
+	else {
+			$datosr=array('titulo' => 'Gesti&oacute;n de Usuarios','titulo2' => 'Registro de Usuarios','icono' => 'fa fa-user','icono2' => 'fa fa-users','activeTab' => 1,'main' => 'user/usuarios/register','message'	=> $mess);
+      $this->form_validation->set_rules('password', '', 'required',array('required' => 'Introduzca una Clave!! '));
+      $this->form_validation->set_rules('password2', 'Clave', 'matches[password]',array('matches' => 'Las Claves deben ser iguales!'));
+			$this->form_validation->set_rules('email', 'Correo', 'is_unique[usuarios.email]',array('is_unique'=>'Ya existe un %s igual registrado'));      
+      $this->form_validation->set_rules('username', 'Usuario', 'is_unique[usuarios.usuario]',array('is_unique'=>'Ya existe un %s igual registrado'));
+      if ($this->form_validation->run() == FALSE)
+      {
+			$this->load->view('base_template/base',$datosr);
+			}
+			else
+			{   	
+			$usuario = addslashes($_POST['username']);
+    	$clave = addslashes($_POST['password']);$password=sha1($clave);
+			$email = addslashes($_POST['email']);
+			$nombre = addslashes($_POST['nombre']);
+			$apellido=addslashes($_POST['fullname']);;
+			$activo=1;
+			$date=date('Y-m-d H:i:s');
+			$data = array(
+        'usuario' => $usuario,
+        'clave' => $password,
+        'email' => $email,
+        'nombre' => $nombre,
+        'apellido' => $apellido,
+        'activo' => $activo,
+        'fe_create' => $date,
+        'fe_update' => $date);
+        $temp = $this->dash->reg_insert($data);
+			if($temp != NULL){
+				$datos1=array('titulo' => 'Gesti&oacute;n de Usuarios','titulo2' => 'Lista de Usuarios','icono' => 'fa fa-user','icono2' => 'fa fa-users','activeTab' => 1,'main' => 'user/usuarios/listado','message'	=> $mess, 'datos' => $this->dash->list_user()->result_array());
+				$this->session->set_flashdata('success', "El Usuario fue Registrado con exito!!!");
+				$this->load->view('base_template/base',$datos1);				
+				}
+				else{
+				$this->session->set_flashdata('error', "Hubo un Error al Registrar el Usuario !!!intente de nuevo!!!");
+				$this->load->view('base_template/base',$datosr);			
+				}
+			}
+		}
+	}	
+
+	function register()
+	{    		
+		if(!$this->session->userdata('username')){
+		$this->session->set_flashdata('error', "Debe iniciar sesi&oacute;n");
+		$data['main'] 	= 'user/login';
+		$this->load->view('base_template/login_base',$data);
+	}
+	else {
+    	  $data['titulo']="Gesti&oacute;n de Usuarios";
+    	  $data['titulo2']="Registro de Usuarios";
+    	  $data['icono']="fa fa-user";
+    	  $data['icono2']="fa fa-users";    	  
+    	  $data['activeTab']=1;
+				$data['main'] = 'user/usuarios/register';  
+
+			$this->load->view('base_template/base',$data);
+		}
+	}
+	function editar_usuarios($id)
+	{ 
+		if(!$this->session->userdata('username')){
+		$this->session->set_flashdata('error', "Debe iniciar sesi&oacute;n");
+		$data['main'] 	= 'user/login';
+		$this->load->view('base_template/login_base',$data);
+	}
+	else {   
+
+    	$ref=$this->dash->UsuarioEdit($id);
+				$data['id'] = $ref; 
+    	  $data['titulo']="Gesti&oacute;n de Usuarios";
+    	  $data['titulo2']="Editar Usuarios";
+    	  $data['icono']="fa fa-user";
+    	  $data['icono2']="fa fa-users";    	  
+    	  $data['activeTab']=1;			
+				$data['main'] = 'user/usuarios/editar_usuarios';		    
+
+			$this->load->view('base_template/base',$data);
+		}
+	}	
+
+	function listado($mess = 2)
+	{
+		if(!$this->session->userdata('username')){
+		$this->session->set_flashdata('error', "Debe iniciar sesi&oacute;n");
+		$data['main'] 	= 'user/login';
+		$this->load->view('base_template/login_base',$data);
+	}
+	else {	
+		
+    	  $data['titulo']="Gesti&oacute;n de Usuarios";
+    	  $data['titulo2']="Lista de Usuarios";
+    	  $data['icono']="fa fa-user";
+    	  $data['icono2']="fa fa-users";    	  
+    	  $data['activeTab']=1;
+		  	$data['datos']	= $this->dash->list_user()->result_array();
+				$data['main'] = 'user/usuarios/listado';
+				$data['message'] 	= $mess;
+        $this->load->view('base_template/base',$data);	
+      }
+  }
+	function update_user($mess = 1)
+	{
+		if(!$this->session->userdata('username')){
+		$this->session->set_flashdata('error', "Debe iniciar sesi&oacute;n");
+		$data['main'] 	= 'user/login';
+		$this->load->view('base_template/login_base',$data);
+	}
+	else {
+			$nombre = addslashes($_POST['nombre']);
+			$apellido=addslashes($_POST['fullname']);;
+			$email = addslashes($_POST['email']);
+			$usuario = addslashes($_POST['username']);
+			$date=date('Y-m-d H:i:s');
+			$activo=addslashes($_POST['estado']);;
+			$id=addslashes($_POST['id']);;
+			$data = array(
+        'usuario' => $usuario,
+        'email' => $email,
+        'nombre' => $nombre,
+        'apellido' => $apellido,
+        'activo' => $activo,
+        'fe_update' => $date,
+         );
+        $temp = $this->dash->reg_update($data,$id);
+			if($temp != NULL){
+						header('location:'.base_url().'user/listado/1');
+						echo $temp;
+				}
+				else{
+				$data['titulo']="Gesti&oacute;n de Usuarios";
+    	  $data['titulo2']="Actualizar Usuarios";
+    	  $data['icono']="fa fa-user";
+    	  $data['icono2']="fa fa-users";    	  
+    	  $data['activeTab']=1;
+				$data['main'] 	= 'user/usuarios/editar_usuarios';
+				$data['message'] 	= 0;
+			$this->load->view('base_template/base',$data);	
+				}			
+		}
+	}
+	function logout()
+	{
+    $this->session->unset_userdata('username');
+    $this->session->unset_userdata('admin');
+		redirect('user/index', 'index');
+	}	
+ /////////////////////////////////////////////////////////	
+	 /////////////////////////////////////////////////////////	
+//////clientes///////////////////////////////	
+	
+	function clientes($mess = 2)
+	{
+		if(!$this->session->userdata('username')){
+		$this->session->set_flashdata('error', "Debe iniciar sesi&oacute;n");
+		$data['main'] 	= 'user/login';
+		$this->load->view('base_template/login_base',$data);
+	}
+	else {
+    	  $data['titulo']="Gesti&oacute;n de Usuarios";
+    	  $data['titulo2']="Lista de Clientes Suscritos";
+    	  $data['icono']="fa fa-user";
+    	  $data['icono2']="fa fa-list";
+    	  $data['activeTab']=1;
+		  	$data['datos']	= $this->dash->list_clientes()->result_array();
+				$data['main'] = 'user/clientes/clientes';
+				$data['message'] 	= $mess;
+        $this->load->view('base_template/base',$data);	
+ 	 }	
+	}
+	function correos($mess = 2)
+	{
+		if(!$this->session->userdata('username')){
+		$this->session->set_flashdata('error', "Debe iniciar sesi&oacute;n");
+		$data['main'] 	= 'user/login';
+		$this->load->view('base_template/login_base',$data);
+	}
+	else {
+    	  $data['titulo']="Gesti&oacute;n de Usuarios";
+    	  $data['titulo2']="Lista de Correos Semanales";
+    	  $data['icono']="fa fa-user";
+    	  $data['icono2']="fa fa-list";
+    	  $data['activeTab']=1;
+		  	$data['datos']	= $this->dash->list_correos()->result_array();
+				$data['main'] = 'user/correos/correos';
+				$data['message'] 	= $mess;
+        $this->load->view('base_template/base',$data);	
+ 	 }	
+	}
+	function reg_correo()
+	{    
+		if(!$this->session->userdata('username')){
+		$this->session->set_flashdata('error', "Debe iniciar sesi&oacute;n");
+		$data['main'] 	= 'user/login';
+		$this->load->view('base_template/login_base',$data);
+	}
+	else {
+		    $data['titulo']="Gesti&oacute;n de Usuarios";
+    	  $data['titulo2']="Registro de Correos";
+    	  $data['icono']="fa fa-user";
+    	  $data['icono2']="fa fa-plus-circle";
+    	  $data['activeTab']=1;
+				$data['main'] = 'user/correos/reg_correo';
+				$data['datos'] = $this->dash->list_semanas()->result_array();
+
+			$this->load->view('base_template/base',$data);
+		}
+	}	
+	function add_correo($mess = 1)
+	{
+		if(!$this->session->userdata('username')){
+		$this->session->set_flashdata('error', "Debe iniciar sesi&oacute;n");
+		$data['main'] 	= 'user/login';
+		$this->load->view('base_template/login_base',$data);
+	}
+	else {
+		$this->form_validation->set_rules('semana', 'Semanas', 'is_unique[correos.semanas]',array('is_unique'=>'Ya existe una Semana igual registrada'));
+		  if ($this->form_validation->run() == FALSE)
+      {
+
+		    $data['titulo']="Gesti&oacute;n de Usuarios";
+    	  $data['titulo2']="Registro de Correos";
+    	  $data['icono']="fa fa-user";
+    	  $data['icono2']="fa fa-plus-circle";
+    	  $data['activeTab']=1;
+				$data['main'] = 'user/correos/reg_correo';
+				$data['datos'] = $this->dash->list_semanas()->result_array();
+				$this->load->view('base_template/base',$data);	
+			}
+			else{
+		
+			$semana = addslashes($_POST['semana']);
+			$descripcion=addslashes($_POST['descripcion']);;
+			$correo=$_POST['correo'];
+			$data = array(
+        'semanas' => $semana,
+        'correo' => $correo,
+        'descripcion' => $descripcion);
+        $temp = $this->dash->reg_correos($data);
+			if($temp != NULL){
+						header('location:'.base_url().'user/correos/1');
+				}		
+		}
+	}
+	}
+	function editar_correos($id)
+	{    
+		if(!$this->session->userdata('username')){
+		$this->session->set_flashdata('error', "Debe iniciar sesi&oacute;n");
+		$data['main'] 	= 'user/login';
+		$this->load->view('base_template/login_base',$data);
+	}
+	else {
+    	$ref=$this->dash->CorreoEdit($id);
+    	  $data['titulo']="Gesti&oacute;n de Usuarios";
+    	  $data['titulo2']="Editar Correos";
+    	  $data['icono']="fa fa-user";
+    	  $data['icono2']="fa fa-edit";
+    	  $data['activeTab']=1;
+				$data['id'] = $ref; 
+				$data['main'] = 'user/correos/editar_correos';
+				$data['datos'] = $this->dash->list_semanas()->result_array();
+						    
+
+			$this->load->view('base_template/base',$data);
+		}
+	}
+	function update_correo($mess = 1)
+	{
+		if(!$this->session->userdata('username')){
+		$this->session->set_flashdata('error', "Debe iniciar sesi&oacute;n");
+		$data['main'] 	= 'user/login';
+		$this->load->view('base_template/login_base',$data);
+	}
+	else {
+			$semana = addslashes($_POST['semana']);
+			$id = addslashes($_POST['id']);
+			$descripcion=addslashes($_POST['descripcion']);;
+			$correo=$_POST['correo'];
+			$data = array(
+        'semanas' => $semana,
+        'correo' => $correo,
+        'descripcion' => $descripcion);
+        $temp = $this->dash->update_correos($data,$id);
+			if($temp != NULL){
+						header('location:'.base_url().'user/correos/1');
+				}		
+		}
+	}	
+	
+	function eliminar_registro()
+	{
+	$codigo=$_REQUEST['numero'];
+	$temp=$this->dash->eliminar_registro($codigo);
+	if(!$temp){$retorna['resultado']="si";}else {$retorna['resultado']="no";}
+	echo json_encode($retorna);
+	}
+}
+
+
+/* End of file user.php */
+/* Location: ./application/controllers/user.php */

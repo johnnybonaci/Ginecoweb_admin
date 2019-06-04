@@ -1,0 +1,816 @@
+<script src="<?php echo base_url(); ?>assets/global/plugins/jquery.min.js" type="text/javascript"></script>
+										<div class="col-md-12">
+
+								<div class="portlet box green">
+									<div class="portlet-title">
+					<div class="caption">
+						<i class="fa fa-gears"></i> Eco Primer Trimestre N# <?php echo $numerocon;?> => Fecha <?php echo date("d/m/Y");?>
+					</div>
+
+									</div>
+									<div class="portlet-body form">
+										<!-- BEGIN FORM-->
+										<form action="<?php echo site_url('consulta/reg_PrimerTrimestre'); ?>" method="post" class="horizontal-form">
+											<input type="hidden" name="id_eco_obstetrico_1" id="id_eco_obstetrico_1" value="<?php echo $numerocon;?>">											
+											<div class="form-body">
+<?php
+if(isset($message)){ 
+if($message == 0){?>
+		<div class="alert alert-danger">
+		<button class="close" data-close="success" id="eliminar"></button>
+		<span>
+		 Los Datos no Fueron Registrados </span>
+	</div>
+	<?php
+}
+}
+?>												
+												<div class="row">
+													<div class="col-md-2">
+														<div class="form-group">
+															<label class="control-label">Cedula</label>
+															<div class="input-group">
+															<span class="input-group-addon input-circle-left">
+															<i class="fa fa-tablet"></i>
+															</span>
+																<input readonly type="text" class="form-control input-circle-right" placeholder="Cedula" name="cedula" id="cedula" value="<?php echo $id[0]['cedula'] ?>"/>
+											<input type="hidden" id="id_paciente" name="id_paciente" value="<?php echo $id[0]['id_paciente'] ?>">
+																<input type="hidden" name="id_usuario" value="<?php echo $id[0]['id_usuario'] ?>">
+															</div>
+														</div>
+													</div>
+													<div class="col-md-3">
+												<div class="form-group">
+															<label class="control-label">Nombre</label>
+														<div class="input-group">
+															<span class="input-group-addon input-circle-left">
+															<i class="fa fa-user"></i>
+															</span>
+															<input readonly type="text" class="form-control input-circle-right" placeholder="Nombre" name="nombre" value="<?php echo $id[0]['nombre']." ".$id[0]['apellido'] ?>"/>
+														</div>
+												</div>														
+												</div>	
+										<div class="col-md-3">																						
+									<div class="form-group">
+										<label class="control-label">Fecha de Nacimiento</label>
+											<div class="input-group date date-picker" data-date-format="dd-mm-yyyy">
+															<span class="input-group-addon input-circle-left">
+															<i class="fa fa-calendar"></i>
+															</span>														
+												<input name="fecha_nac" id="fecha_nac" type="text" class="form-control input-circle-right" readonly value="<?php echo $this->dash->fechanew2($id[0]['fecha_nac']) ?>">
+
+											</div>
+									</div>								
+										</div>
+													<div class="col-md-2">
+												<div class="form-group">
+															<label class="control-label">Edad</label>
+														<div class="input-group">
+															<span class="input-group-addon input-circle-left">
+															<i class="fa fa-list-ol"></i>
+															</span>
+															<input type="number" class="form-control input-circle-right" placeholder="Edad" name="edad" id="edad" readonly value="<?php echo $id[0]['edad'] ?>">
+														</div>
+												</div>														
+												</div>
+																																				
+												</div>
+												<div class="row">
+													<div class="col-md-2">
+														<div class="form-group">
+															<label class="control-label">Ultimo Periodo</label>
+															<div class="input-group">
+																<input readonly type="text" class="form-control" name="ultimo_p2" id="ultimo_p2" value=""/>
+															</div>
+														</div>
+													</div>	
+												<div class="col-md-2">
+														<div class="form-group">
+															<label class="control-label">Probable de Parto</label>
+															<div class="input-group">
+																<input readonly type="text" class="form-control" name="parto_p" id="parto_p" value=""/>
+																</div>
+														</div>
+													</div>
+													<div class="col-md-2">
+														<div class="form-group">
+															<label class="control-label">Edad Gestacional</label>
+															<div class="input-group">
+																<input readonly type="text" class="form-control" name="edadg" id="edadg" value=""/>
+																</div>
+														</div>
+													</div>
+													<div class="col-md-2">
+														<div class="form-group">
+															<label class="control-label">Paridad</label>
+															<div class="input-group">
+																<input type="number" class="form-control" name="paridad" id="paridad" value=""/>										
+																</div>
+														</div>
+													</div>
+													<div class="col-md-3">
+														<div class="form-group">
+															<label class="control-label">Medico Tratante</label>
+													<select  name="tratante" id="tratante" class="form-control select2me" data-placeholder="Selecccione">
+															<option value=""></option>
+												<?php $num = 0;foreach($tratante as $medico){?>
+													<option value="<?php echo $medico['id_tratante']; ?>"><?php echo $medico['tratante']; ?></option>
+											<?php } ?>
+														</select>												
+													</div>
+													</div>																	
+											</div>
+											<div class="row">
+												<div class="col-md-4">
+														<div class="form-group">
+															<label class="control-label">Sonda</label>
+														<select  name="sonda" id="sonda" class="form-control select2me" data-placeholder="Selecccione">			
+															<option value=""></option>
+															<option value="Transvaginal Multifrecuencial">Transvaginal Multifrecuencial</option>
+															<option value="Transabdominal multifrecuencial">Transabdominal multifrecuencial</option>
+															<option value="Mixto TV/TA multifrecuencial">Mixto TV/TA multifrecuencial</option>
+														</select>												
+														</div>
+												</div>
+												<div class="col-md-4">
+														<div class="form-group">
+															<label class="control-label">Tipo de Estudio</label>
+														<select  name="estudio" id="estudio" class="form-control select2me" data-placeholder="Selecccione">
+															<option value=""></option>
+															<option value="Obstetrico">Obstetrico</option>
+															<option value="Obstetrico Doppler">Obstetrico Doppler</option>
+															<option value="Genetico segundo trimestre">Genetico segundo trimestre</option>
+														</select>												
+														</div>
+												</div>
+													<div class="col-md-4">
+										<div class="form-group">
+										<label class="control-label">Comentarios</label>
+												<textarea rows="2" class="form-control" placeholder="Comentarios..." name="comentarios"></textarea>
+									</div>
+													</div>																										
+													
+																						
+													
+												</div>
+							<div class="tabbable-custom ">
+								<ul class="nav nav-tabs ">
+									<li class="active">
+										<a href="#tab_5_1" data-toggle="tab">
+										General y Biometria </a>
+									</li>
+									<li>
+										<a href="#tab_5_2" data-toggle="tab">
+										Anatomia y Marcadores Geneticos </a>
+									</li>
+									<li>
+										<a href="#tab_5_3" data-toggle="tab">
+										Funcional </a>
+									</li>
+									<li>
+										<a href="#tab_5_4" data-toggle="tab">
+									Diagnosticos y Sugerencias </a>
+									</li>																		
+								</ul>
+								<div class="tab-content">
+									<div class="tab-pane active" id="tab_5_1">
+										<div class="row">
+												
+													<div class="col-md-3">
+														<div class="form-group">
+															<label class="control-label">Numero de fetos</label>
+															<select  name="nfetos" class="form-control select2me" data-placeholder="Selecccione">			
+															<option value=""></option>
+															<option value="1">1</option>
+															<option value="2">2</option>
+															<option value="3">3</option>
+														</select>
+														</div>
+													</div>
+													<div class="col-md-3">
+														<div class="form-group">
+															<label class="control-label">Estatica Fetal</label>
+																<select  name="efetal" class="form-control select2me" data-placeholder="Selecccione">
+															<option value=""></option>			
+															<option value="Cefalica Derecha">Cefalica Derecha</option>
+															<option value=" Cefalica Izquierda"> Cefalica Izquierda</option>
+															<option value="Podalica Derecha">Podalica Derecha</option>
+															<option value="Podalica Izquierda">Podalica Izquierda</option>
+															<option value="Oblicua Variable">Oblicua Variable</option>
+														</select>
+														</div>
+													</div>
+													<div class="col-md-3">
+														<div class="form-group">
+															<label class="control-label">Signos Vitales Fetales</label>
+																<select  name="svfetales" class="form-control select2me" data-placeholder="Selecccione">
+															<option value=""></option>			
+															<option value="Presentes">Presentes</option>
+															<option value="Ausentes">Ausentes</option>
+														</select>
+														</div>
+													</div>
+													<div class="col-md-3">
+														<div class="form-group">
+															<label class="control-label">Placentacion</label>
+															<select  name="Placentacion" class="form-control select2me" data-placeholder="Selecccione">			
+															<option value=""></option>
+															<option value="Aspecto general normal">Aspecto general normal</option>
+															<option value="Ver">Ver notas</option>
+														</select>
+
+														</div>
+													</div>
+													<div class="col-md-3">
+														<div class="form-group">
+															<label class="control-label">Vesicula Vitelina</label>
+															<select  name="vvitelina" class="form-control select2me" data-placeholder="Selecccione">			
+															<option value=""></option>
+															<option value="Incompleta">Incompleta</option>
+															<option value="Completa">Completa</option>
+														</select>
+
+														</div>
+													</div>
+													<div class="col-md-3">
+														<div class="form-group">
+															<label class="control-label">Corionicidad</label>
+																<select  name="corionicidad" class="form-control select2me" data-placeholder="Selecccione">
+															<option value=""></option>			
+															<option value="Monocorial">Monocorial</option>
+															<option value="Bicorial Biamniotica">Bicorial Biamniotica</option>
+															<option value="Monocorial Biamniotica">Monocorial Biamniotica</option>
+														</select>
+													</div>
+													</div>
+													<div class="col-md-3">
+														<div class="form-group">
+															<label class="control-label">Fusion Amniocorial</label>
+															<select  name="famniocorial" class="form-control select2me" data-placeholder="Selecccione">			
+															<option value=""></option>
+															<option value="Incompleta">Incompleta</option>
+															<option value="Completa">Completa</option>
+														</select>
+
+														</div>
+													</div>
+													<div class="col-md-3">
+														<div class="form-group">
+															<label class="control-label">Cordon</label>
+															<select  name="cordon" class="form-control select2me" data-placeholder="Selecccione">			
+															<option value=""></option>
+															<option value="3 Vasos">3 Vasos</option>
+															<option value="AU UNICA">AU UNICA</option>
+														</select>
+
+														</div>
+													</div>													
+													<div class="col-md-3">
+														<div class="form-group">
+															<label class="control-label">LCR</label>
+																<input type="text" class="form-control" name="lcr"/>
+														</div>
+													</div>					
+													
+														<div class="col-md-3">
+														<div class="form-group">
+															<label class="control-label">Bipariental</label>
+																<input type="text" class="form-control" name="bipariental"/>
+														</div>
+													</div>
+													<div class="col-md-3">
+														<div class="form-group">
+															<label class="control-label">Circunferencia Cefalica</label>
+																<input type="text" class="form-control" name="ccefalica"/>
+														</div>
+													</div>
+													<div class="col-md-3">
+														<div class="form-group">
+															<label class="control-label">Humero</label>
+																<input type="text" class="form-control" name="humero"/>
+														</div>
+													</div>
+											
+											<div class="col-md-3">
+														<div class="form-group">
+															<label class="control-label">Circunferencia Abdominal</label>
+																<input type="text" class="form-control" name="cabdominal"/>
+														</div>
+													</div>													
+													
+													<div class="col-md-3">
+														<div class="form-group">
+															<label class="control-label">Femur</label>
+																<input type="text" class="form-control" name="femur"/>
+														</div>
+													</div>
+													<div class="col-md-3">
+														<div class="form-group">
+															<label class="control-label">Peso Fetal Estimado</label>
+																<input type="text" class="form-control" name="pfe"/>
+														</div>
+													</div>
+										</div>														
+											<div class="row">
+												<div class="col-md-12">
+														<div class="form-group">
+															<label class="control-label">Nota Biometrica</label>
+																<input type="text" class="form-control" name="nbiometrica"/>
+														</div>
+													</div>
+													
+											</div>
+											
+										
+									</div>	
+									<div class="tab-pane" id="tab_5_2">
+										<div class="row">
+											
+												<div class="col-md-4">
+														<div class="form-group">
+															<label class="control-label">Craneo</label>
+															<select  name="Craneo" class="form-control select2me" data-placeholder="Selecccione">			
+															<option value=""></option>
+															<option value="Normocefalo">Normocefalo</option>
+															<option value="Ver NOTAS">Ver NOTAS</option>
+														</select>
+
+														</div>
+														
+													</div>
+													<div class="col-md-4">
+													<div class="form-group">
+															<label class="control-label">Pared Abdominal</label>
+															<select  name="pabdominal" class="form-control select2me" data-placeholder="Selecccione">			
+															<option value=""></option>
+															<option value="Integra">Integra</option>
+															<option value="Onfalocele">Onfalocele</option>
+															<option value="Gastrosquisis">Gastrosquisis</option>
+															<option value="Ver NOTAS">Ver NOTAS</option>
+														</select>
+														</div>
+
+														</div>
+														
+														<div class="col-md-4">
+													<div class="form-group">
+															<label class="control-label">Translucencia Nucal</label>
+															<select  name="tnucal" class="form-control select2me" data-placeholder="Selecccione">			
+															<option value=""></option>
+															<option value="0.7">0.7</option>
+															<option value="0.8">o.8</option>
+															<option value="0.9">0.9</option>
+															<option value="1.0">1.0</option>
+															<option value="1.1">1.1</option>
+															<option value="1.2">1.2</option>
+															<option value="1.3">1.3</option>
+															<option value="1.4">1.4</option>
+															<option value="1.5">1.5</option>
+															<option value="1.6">1.6</option>
+															<option value="1.7">1.7</option>
+															<option value="1.8">1.8</option>
+															<option value="1.9">1.9</option>
+															<option value="2.0">2.0</option>
+														</select>
+														</div>
+
+														</div>
+											</div>	
+											<div class="row">
+												<div class="col-md-4">
+														<div class="form-group">
+															<label class="control-label">Cerebelo</label>
+															<select  name="cerebelo" class="form-control select2me" data-placeholder="Selecccione">			
+															<option value=""></option>
+															<option value="NoVisible">No Visible</option>
+															<option value="Visible">Visible</option>
+															<option value="acorde a EG)">acorde a EG</option>
+														</select>
+
+														</div>
+													</div>
+													
+													<div class="col-md-4">
+														<div class="form-group">
+															<label class="control-label">Higado</label>
+															<select  name="higado" class="form-control select2me" data-placeholder="Selecccione">			
+															<option value=""></option>
+															<option value="Integra">Integra</option>
+															<option value="Aspecto Normal">Aspecto Normal</option>
+															<option value="Ver NOTAS">Ver NOTAS</option>
+														</select>
+
+														</div>
+													</div>
+													
+													<div class="col-md-4">
+														<div class="form-group">
+															<label class="control-label">Huesos Nasales</label>
+																<input type="number" class="form-control" name="hnasales"/>
+														</div>
+													</div>
+												</div>
+													
+													<div class="row">
+														
+														
+													<div class="col-md-4">
+														<div class="form-group">
+															<label class="control-label">Sistema Ventricular</label>
+															<select  name="sventricular" class="form-control select2me" data-placeholder="Selecccione">			
+															<option value=""></option>
+															<option value="Normal (<10mm)">Normal (<10mm)</option>
+															<option value="Ventriculomegalia">Ventriculomegalia</option>
+														</select>
+
+														</div>
+													</div>
+													
+										
+											
+											<div class="col-md-4">
+														<div class="form-group">
+															<label class="control-label">Intestinos</label>
+															<select  name="intestinos" class="form-control select2me" data-placeholder="Selecccione">			
+															<option value=""></option>
+															<option value="Grado 1">Grado 1</option>
+															<option value="Grado 2">Grado 2</option>
+															<option value="Grado 3">Grado 3</option>
+															<option value="Grado 4">Grado 4</option>
+															<option value="Ver NOTAS">Ver NOTAS</option>
+														</select>
+
+														</div>
+													</div>	
+													
+													<div class="col-md-4">
+														<div class="form-group">
+															<label class="control-label">Ductus Venoso</label>
+															<select  name="dvenoso" class="form-control select2me" data-placeholder="Selecccione">			
+															<option value=""></option>
+															<option value="Normal">Normal</option>
+															<option value="Alterado">Alterado</option>
+															<option value="Ver NOTAS">Ver NOTAS</option>
+														</select>
+
+														</div>
+													</div>	
+													
+											</div>
+											
+											
+											
+																																
+                        <div class="row">
+
+													
+													<div class="col-md-4">
+														<div class="form-group">
+															<label class="control-label">Hoz Cerebral</label>
+															<select  name="hcerebral" class="form-control select2me" data-placeholder="Selecccione">			
+															<option value=""></option>
+															<option value="Central, simetria axial">Central, simetria axial</option>
+															
+														</select>
+
+														</div>
+													</div>
+													
+													<div class="col-md-4">
+														<div class="form-group">
+															<label class="control-label">Rinones</label>
+															<select  name="rinones" class="form-control select2me" data-placeholder="Selecccione">			
+															<option value=""></option>
+															<option value="2 Visibles">2 Visibles</option>
+															<option value="Ver NOTAS">Ver NOTAS</option>
+														</select>
+
+														</div>
+													</div>
+													
+													<div class="col-md-4">
+														<div class="form-group">
+															<label class="control-label">Valvula Tricuspidea</label>
+															<select  name="vtri" class="form-control select2me" data-placeholder="Selecccione">			
+															<option value=""></option>
+															<option value="Suficiente">Suficiente</option>
+															<option value="insuficiente">insuficiente</option>
+														</select>
+
+														</div>
+													</div>
+												</div>
+													
+													<div class="row">
+														<div class="col-md-4">
+														<div class="form-group">
+															<label class="control-label">Plexos Coroideos</label>
+															<select  name="pc" class="form-control select2me" data-placeholder="Selecccione">			
+															<option value=""></option>
+															<option value="Normales, afrontados">Normales, afrontados</option>
+															<option value="Quiste unilateral">Quiste unilateral</option>
+															<option value="Quistes bilaterales">Quistes bilaterales</option>
+														</select>
+
+														</div>
+													</div>
+													
+											     	<div class="col-md-4">
+														<div class="form-group">
+															<label class="control-label">Vejiga</label>
+															<select  name="vejiga" class="form-control select2me" data-placeholder="Selecccione">			
+															<option value=""></option>
+															<option value="Llena">Llena</option>
+															<option value="No Visualizable">No Visualizable</option>
+															<option value="Ver NOTAS">Ver NOTAS </option>
+														</select>
+
+														</div>
+													</div>
+													
+													
+													
+												<div class="col-md-4">
+														<div class="form-group">
+															<label class="control-label">Orbitas Oculares</label>
+															<select  name="oo" class="form-control select2me" data-placeholder="Selecccione">			
+															<option value=""></option>
+															<option value="2, cristalinos visibles">2, cristalinos visibles</option>
+															<option value="No Evaluable">No Evaluable</option>
+															<option value="VER NOTAS">VER NOTAS</option>
+														</select>
+
+														</div>
+													</div>	
+												</div>
+										<div class="row">
+											<div class="col-md-4">
+														<div class="form-group">
+															<label class="control-label">Genitales</label>
+															<select  name="genitales" class="form-control select2me" data-placeholder="Selecccione">			
+															<option value=""></option>
+															<option value="Femeninos">Femeninos</option>
+															<option value="Masculinos">Masculinos</option>
+															<option value="Indeterminables">Indeterminables </option>
+														</select>
+
+														</div>
+													</div>	
+													
+													<div class="col-md-4">
+														<div class="form-group">
+															<label class="control-label">Rostro</label>
+															<select  name="rostro" class="form-control select2me" data-placeholder="Selecccione">			
+															<option value=""></option>
+															<option value="Sin fisuras">Sin fisuras</option>
+															<option value="Macizo facial visible">Macizo facial visible</option>
+														</select>
+
+														</div>
+													</div>	
+													<div class="col-md-4">
+														<div class="form-group">
+															<label class="control-label">Miembros</label>
+															<select  name="miembros" class="form-control select2me" data-placeholder="Selecccione">			
+															<option value=""></option>
+															<option value="4 Visibles">4 Visibles</option>
+															<option value="Ver NOTAS">Ver NOTAS</option>
+														</select>
+
+														</div>
+													</div>	
+											
+													
+											</div>	
+											<div class="row">
+														<div class="col-md-4">
+														<div class="form-group">
+															<label class="control-label">Torax</label>
+															<select  name="torax" class="form-control select2me" data-placeholder="Selecccione">			
+															<option value=""></option>
+															<option value="Integro">Integro</option>
+															<option value="Ver NOTAS">Ver NOTAS</option>
+														</select>
+
+														</div>
+													</div>
+													
+															<div class="col-md-4">
+														<div class="form-group">
+															<label class="control-label">Pies y Manos</label>
+															<select  name="piemano" class="form-control select2me" data-placeholder="Selecccione">			
+															<option value=""></option>
+															<option value="normales">Normales</option>
+															<option value="Ver NOTAS">Ver NOTAS</option>
+														</select>
+
+														</div>
+													</div>
+													
+															
+													
+													<div class="col-md-4">
+														<div class="form-group">
+															<label class="control-label">Diafragma</label>
+															<select  name="diafragma" class="form-control select2me" data-placeholder="Selecccione">			
+															<option value=""></option>
+															<option value="Integro">Integrol</option>
+															<option value="Ver NOTAS">Ver NOTAS</option>
+														</select>
+
+														</div>
+													</div>
+												</div>
+													
+											<div class="row">
+													<div class="col-md-4">
+														<div class="form-group">
+															<label class="control-label">Columna Vertebral</label>
+															<select  name="cvertebral" class="form-control select2me" data-placeholder="Selecccione">			
+															<option value=""></option>
+															<option value="Integra">Integra</option>
+															<option value="Ver NOTAS">Ver NOTAS</option>
+														</select>
+
+														</div>
+													</div>
+													<div class="col-md-4">
+														<div class="form-group">
+															<label class="control-label">Corazon</label>
+															<select  name="corazon" class="form-control select2me" data-placeholder="Selecccione">			
+															<option value=""></option>
+															<option value="4 Camaras visibles">4 Camaras visibles</option>
+															<option value="Ver NOTAS">Ver NOTAS</option>
+														</select>
+
+														</div>
+													</div>
+													
+													<div class="col-md-4">
+														<div class="form-group">
+															<label class="control-label">Sacro</label>
+															<select  name="sacro" class="form-control select2me" data-placeholder="Selecccione">			
+															<option value=""></option>
+															<option value="Integro">Integro</option>
+															<option value="Orientacion normal">Orientacion normal</option>
+														</select>
+
+														</div>
+													</div>
+											</div>	
+											
+											<div class="row">
+												<div class="col-md-12">
+														<div class="form-group">
+															<label class="control-label">Notas Anatomicas</label>
+																<input type="text" class="form-control" name="notasana"/>
+														</div>
+													</div>
+													
+											</div>	
+											<div class="row">
+												<div class="col-md-12">
+														<div class="form-group">
+															<label class="control-label">Notas Marcadores Geneticos</label>
+																<input type="text" class="form-control" name="nmg"/>
+														</div>
+													</div>
+													
+											</div>																						
+                           
+											
+									</div>
+									<div class="tab-pane" id="tab_5_3">
+										
+										<div class="row">
+											
+											<div class="col-md-3">
+														<div class="form-group">
+															<label class="control-label">Liquido Amniotico</label>
+															<select  name="la" class="form-control select2me" data-placeholder="Selecccione">			
+															<option value=""></option>
+															<option value="Normal">Normal</option>
+															<option value="Insuficiente">Insuficiente</option>
+														</select>
+
+														</div>
+													</div>
+											
+													
+													
+											</div>	
+
+													<div class="row">
+											
+													<div class="col-md-3">
+														<div class="form-group">
+															<label class="control-label">M Respiratorios</label>
+															<select  name="mres" class="form-control select2me" data-placeholder="Selecccione">			
+															<option value=""></option>
+															<option value="Evidentes">Evidentes</option>
+															<option value="no visibles">NO VISIBLES</option>
+														</select>
+
+														</div>
+													</div>
+															
+											</div>
+											
+													<div class="row">
+											
+													<div class="col-md-3">
+														<div class="form-group">
+															<label class="control-label">M Fetales</label>
+															<select  name="mfetales" class="form-control select2me" data-placeholder="Selecccione">			
+															<option value=""></option>
+															<option value="Activos">Activos</option>
+															<option value="Ausentes">Ausentes</option>
+														</select>
+
+														</div>
+													</div>
+															
+											</div>	
+											
+											<div class="row">
+											
+													<div class="col-md-3">
+														<div class="form-group">
+															<label class="control-label">Tono</label>
+															<select  name="tono" class="form-control select2me" data-placeholder="Selecccione">			
+															<option value=""></option>
+															<option value="Evidente">Evidente</option>
+															<option value="Ausentes">Ausentes</option>
+														</select>
+
+														</div>
+													</div>
+															
+											</div>	
+											</div>	
+										
+					
+									<div class="tab-pane" id="tab_5_4">
+										
+											<div class="row">
+												
+												<div class="col-md-12">
+														<div class="form-group">
+															<label class="control-label">Diagnosticos</label>
+																<input type="text" class="form-control" name="diagnoticos"/>
+														</div>
+													</div>
+													
+											</div>		
+											
+											<div class="row">
+												
+												<div class="col-md-12">
+														<div class="form-group">
+															<label class="control-label">Sugerencias</label>
+																<input type="text" class="form-control" name="sugerencias"/>
+														</div>
+													</div>
+													
+											</div>														
+								</div>	
+									
+						</div>
+						<div class="form-actions fluid">
+														<div class="col-md-offset-2 col-md-10">
+															<button class="btn btn-success" type="submit">Guardar</button>
+															<a class="btn btn-default" href="<?php echo site_url('consulta/listado_pacientes'); ?>">Cancelar</a>
+														</div>
+													</div>
+						  	<script type="text/javascript">
+
+$(document).ready(miFuncion());
+function miFuncion()
+{
+	var paciente = $("#id_paciente").val();
+	$.post("<?php echo base_url(); ?>consulta/ultimop", {
+                   id_paciente:paciente,
+                }, function(data){
+								var paridad = data.paridad;
+								var fecha = data.ultimo_p;
+								var res = fecha.split("-");
+								var dia = parseFloat(res[2]);
+								var mes = res[1];
+								var ano = res[0];
+								result = calcular(dia,mes,ano);
+							  if(result=="nopasa"){
+							    alert("Ultima fecha del periodo ingresada supera tiempo estimado de parto, Actualice fecha de ultimo periodo de la paciente");
+							    
+								}
+								else{
+									var ultimo_periodo= res[2]+"-"+res[1]+"-"+res[0];
+									var fecha_parto=result[3].split("-");
+									var edad_gestacional= result[4]+"."+result[5];
+									//alert(ultimo_periodo+" "+fecha_parto+" "+edad_gestacional)
+									$("#ultimo_p2").val(ultimo_periodo);
+									$("#parto_p").val(fecha_parto[2]+"-"+fecha_parto[1]+"-"+fecha_parto[0]);
+									$("#edadg").val(edad_gestacional);
+								}
+               }, "json");
+}
+	</script>

@@ -1,0 +1,2 @@
+[09-Mar-2017 05:28:32 UTC] PHP Parse error:  syntax error, unexpected '=>' (T_DOUBLE_ARROW), expecting ')' in /home/obstetri/public_html/admin/application/controllers/Consulta.php on line 138
+[09-Mar-2017 05:30:31 UTC] PHP Parse error:  syntax error, unexpected '=>' (T_DOUBLE_ARROW), expecting ')' in /home/obstetri/public_html/admin/application/controllers/Consulta.php on line 207

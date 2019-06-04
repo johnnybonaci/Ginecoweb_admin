@@ -1,0 +1,194 @@
+										<div class="col-md-12">
+
+								<div class="portlet box red">
+									<div class="portlet-title">
+					<div class="caption">
+						<i class="fa fa-gears"></i> Registro de Pacientes
+					</div>
+
+									</div>
+									<div class="portlet-body form">
+										<!-- BEGIN FORM-->
+										<form action="<?php echo site_url('consulta/add_pacientes'); ?>" method="post" class="horizontal-form">
+											<div class="form-body">
+<?php
+if(isset($message)){ 
+if($message == 0){?>
+		<div class="alert alert-danger">
+		<button class="close" data-close="success" id="eliminar"></button>
+		<span>
+		 Los Datos no Fueron Registrados </span>
+	</div>
+	<?php
+}
+}
+?>												
+												<div class="row">
+													<div class="col-md-3">
+														<div class="form-group">
+															<label class="control-label">Cedula</label>
+															<div class="input-group">
+															<span class="input-group-addon input-circle-left">
+															<i class="fa fa-tablet"></i>
+															</span>
+																<input required type="text" class="form-control input-circle-right" placeholder="Cedula" name="cedula" id="cedula" value="<?php echo set_value('cedula'); ?>"/>
+															</div>
+														</div>
+															<span class="help-block"><?php echo form_error('cedula', '<div class="alert alert-danger"><button class="close" data-close="danger" id="eliminar"></button>', '</div>'); ?></span>
+													</div>
+													<div class="col-md-3">
+												<div class="form-group">
+															<label class="control-label">Nombre</label>
+														<div class="input-group">
+															<span class="input-group-addon input-circle-left">
+															<i class="fa fa-user"></i>
+															</span>
+															<input required type="text" class="form-control input-circle-right" placeholder="Nombre" name="nombre" value="<?php echo set_value('nombre'); ?>"/>
+														</div>
+												</div>														
+												</div>
+													<div class="col-md-3">
+												<div class="form-group">
+															<label class="control-label">Apellido</label>
+														<div class="input-group">
+															<span class="input-group-addon input-circle-left">
+															<i class="fa fa-users"></i>
+															</span>
+															<input required type="text" class="form-control input-circle-right" placeholder="Apellido" name="apellido" value="<?php echo set_value('apellido'); ?>"/>
+														</div>
+												</div>														
+												</div>	
+													<div class="col-md-3">
+														<div class="form-group">
+															<label class="control-label">Tel&eacute;fono</label>
+															<div class="input-group">
+															<span class="input-group-addon input-circle-left">
+															<i class="fa fa-phone"></i>
+															</span>
+																<input required type="text" class="form-control input-circle-right" placeholder="Tel&eacute;fono" name="telefono" value="<?php echo set_value('telefono'); ?>"/>
+															</div>
+														</div>
+													</div>																							
+												</div>
+												<div class="row">
+										<div class="col-md-3">																						
+									<div class="form-group">
+										<label class="control-label">Fecha de Nacimiento</label>
+											<div class="input-group date date-picker" data-date-format="dd-mm-yyyy">
+															<span class="input-group-addon input-circle-left">
+															<i class="fa fa-calendar"></i>
+															</span>														
+												<input name="fecha_nac" id="fecha_nac" type="text" class="form-control input-circle-right" readonly value="<?php echo set_value('fecha_nac'); ?>">
+
+											</div>
+									</div>	
+									<span class="help-block"><?php echo form_error('fecha_nac', '<div class="alert alert-danger"><button class="close" data-close="danger" id="eliminar"></button>', '</div>'); ?></span>									
+									</div>
+													<div class="col-md-3">
+												<div class="form-group">
+															<label class="control-label">Edad</label>
+														<div class="input-group">
+															<span class="input-group-addon input-circle-left">
+															<i class="fa fa-list-ol"></i>
+															</span>
+															<input type="number" class="form-control input-circle-right" placeholder="Edad" name="edad" id="edad" readonly value="<?php echo set_value('edad'); ?>">
+														</div>
+												</div>														
+												</div>
+												<div class="col-md-3">
+												<div class="form-group">
+															<label class="control-label">Correo</label>
+														<div class="input-group">
+															<span class="input-group-addon input-circle-left">
+															<i class="fa fa-envelope"></i>
+															</span>
+															<input required type="email" class="form-control input-circle-right" placeholder="Correo Electr&oacute;nico" name="correo" value="<?php echo set_value('correo'); ?>"/>
+														</div>
+												</div>
+															<span class="help-block"><?php echo form_error('correo', '<div class="alert alert-danger"><button class="close" data-close="danger" id="eliminar"></button>', '</div>'); ?></span>																										
+												</div>
+													<div class="col-md-3">
+														<div class="form-group">
+															<label class="control-label">Aseguradora</label>
+															<div class="input-group">
+															<span class="input-group-addon input-circle-left">
+															<i class="fa fa-download"></i>
+															</span>
+												<select required name="id_seguros" id="id_seguros" class="form-control input-normal select2me" data-placeholder="Seleccione...">			
+															<option value=""></option>																							
+												<?php $num = 0;foreach($datos as $aseguradora){?>
+													<option value="<?php echo $aseguradora['id_seguros']; ?>"><?php echo $aseguradora['seguros']; ?></option>
+											<?php } ?>
+														</select>
+															</div>
+														</div>
+													</div>												
+																																															
+												</div>												
+												<div class="row">
+												<div class="col-md-3">
+														<div class="form-group">
+															<label class="control-label">Embarazada?</label>
+															<div class="input-group">
+															<span class="input-group-addon input-circle-left">
+															<i class="fa fa-download"></i>
+															</span>
+												<select required name="embarazo" id="embarazo" class="form-control input-normal select2me" data-placeholder="Seleccione...">			
+															<option value=""></option>																							
+															<option value="1">Si</option>																							
+															<option value="2">No</option>																							
+	
+														</select>
+															</div>
+														</div>
+												</div>	
+												<div class="col-md-3">																						
+												<div class="form-group">
+										<label class="control-label">Ultima Fecha del Periodo</label>
+														<div class="input-group date date-picker" data-date-format="dd-mm-yyyy">
+																		<span class="input-group-addon input-circle-left">
+																		<i class="fa fa-calendar"></i>
+																		</span>														
+															<input name="ultimo_p" id="ultimo_p" type="text" class="form-control input-circle-right" readonly value="<?php echo set_value('ultimo_p'); ?>">
+			
+														</div>
+												</div>	
+												<span class="help-block"><?php echo form_error('ultimo_p', '<div class="alert alert-danger"><button class="close" data-close="danger" id="eliminar"></button>', '</div>'); ?></span>									
+												</div>
+												<div class="col-md-3">
+														<div class="form-group">
+															<label class="control-label">Direccion</label>
+															<div class="input-group">
+															<span class="input-group-addon input-circle-left">
+															<i class="fa fa-forward"></i>
+															</span>
+																<input required type="text" class="form-control input-circle-right" placeholder="Direccion" name="direccion" value="<?php echo set_value('direccion'); ?>"/>
+															</div>
+														</div>
+													</div>
+													<div class="col-md-3">
+														<div class="form-group">
+															<label class="control-label">Grupo Sangu&iacute;neo</label>
+															<div class="input-group">
+															<span class="input-group-addon input-circle-left">
+															<i class="fa fa-signal"></i>
+															</span>
+																<input required type="text" class="form-control input-circle-right" placeholder="Grupo Sangu&iacute;neo" name="g_sanguineo" value="<?php echo set_value('g_sanguineo'); ?>"/>
+															</div>
+														</div>
+													</div>												
+												</div>
+																																																											
+												<!--/row-->
+													<div class="form-actions fluid">
+														<div class="col-md-offset-2 col-md-10">
+															<button class="btn btn-success" type="submit">Registrar</button>
+															<a class="btn btn-default" href="<?php echo site_url('consulta/listado_pacientes'); ?>">Cancelar</a>
+														</div>
+													</div>												
+										</form>
+										<!-- END FORM-->
+									</div>
+								</div>
+							</div>
+						</div>

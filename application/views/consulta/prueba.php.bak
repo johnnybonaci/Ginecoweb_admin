@@ -1,0 +1,17 @@
+					<div class="portlet box yellow">
+						<div class="portlet-title">
+							<div class="caption">
+								<i class="fa fa-gift"></i>Styled Tabs #2
+							</div>
+							<div class="tools">
+								<a href="javascript:;" class="collapse">
+								</a>
+								<a href="#portlet-config" data-toggle="modal" class="config">
+								</a>
+							</div>
+						</div>
+						<div class="portlet-body">
+
+
+						</div>
+					</div>
